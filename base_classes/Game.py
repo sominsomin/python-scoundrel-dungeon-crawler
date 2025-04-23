@@ -85,10 +85,6 @@ class Game:
             else:
                 card_interactions = card.interactions()
             for j, interaction in enumerate(card_interactions):
-                # if len(card_interactions) <= cursor_position_vertical:
-                #     cursor_position_vertical = 0
-                # else:
-                #     pass
                 if i == cursor_position_horizontal and len(card_interactions) <= cursor_position_vertical:
                     cursor_position_vertical = 0
                 line = f'{" > " if i == cursor_position_horizontal and j == cursor_position_vertical else "   "}{str(interaction.value)}'

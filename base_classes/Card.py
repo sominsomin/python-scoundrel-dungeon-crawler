@@ -104,11 +104,9 @@ class Weapon(Card):
     
     def display_content(self):
         return [
-        " /\\ ",
-        " || ",
-        " || ",
-        "====",
-        " || "
+        "  ",
+        " | 00 ",
+        " | 00 ",
     ]
 
 
@@ -124,18 +122,24 @@ class Creature(Card):
     def __repr__(self):
         return f"Creature {self.value}"
     
-    def interactions(self, weapon=None):
+    def interactions(self, weapon: Weapon=None):
         if weapon is None:
             return [CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
         else:
-            return [CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON, CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
+            if len(weapon.defeated_creatures) != 0:
+                if weapon.defeated_creatures[-1].value >= self.value:
+                    return [CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON, CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
+                else:
+                    return [CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
+            else:
+                return [CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON, CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
 
     def display_content(self):
         return [
         " 00 00 ",
         "  | | ",
         " |   | ",
-        " ====",
+        " =====",
         "  | | "
     ]
 
