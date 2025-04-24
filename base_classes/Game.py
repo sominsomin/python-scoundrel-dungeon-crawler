@@ -19,6 +19,12 @@ class Game:
         self.skipped_room = False
         self.term.hide_cursor()
 
+    def reset_game(self) -> None:
+        self.player = Player()
+        self.deck = Deck()
+        self.discard_pile = DiscardPile()
+        self.deck.shuffle()
+
     def draw_player_state(self) -> None:
         print(self.term.home)
         current_room_count = len(self.deck) + len(self.drawn_cards)
@@ -32,12 +38,11 @@ class Game:
 
         print(self.term.move_down(2))
 
-    def check_win_condition(self):
+    def check_win_condition(self) -> None:
         if self.player.health <= 0:
-            return False
+            self.death_screen()
         if len(self.deck) <= 0:
-            return True
-        return None
+            self.win_screen()
         
     def handle_card_interaction(self, selected_card: Card, selected_interaction: CardInteractionTypes) -> None:
         if selected_card.is_weapon():
@@ -51,12 +56,33 @@ class Game:
 
         self.discard_pile.add(selected_card)
 
+    def death_screen(self):
+        print(self.term.clear)
+        print(self.term.black_on_darkkhaki(self.term.center('You died ..... ')))
+        print((self.term.center('Press any key to try again! ')))
+        with self.term.cbreak(), self.term.hidden_cursor():
+            inp = self.term.inkey()
+            print(self.term.clear)
+            self.reset_game()
+            self.first_room()
+    
+    def win_screen(self):
+        print(self.term.clear)
+        print(self.term.black_on_darkkhaki(self.term.center('Congratulations! You finished the dungeon!')))
+        print((self.term.center('Press any key to try again! ')))
+        with self.term.cbreak(), self.term.hidden_cursor():
+            inp = self.term.inkey()
+            print(self.term.clear)
+            self.reset_game()
+            self.first_room()
+
     def draw_state(self, cards, cursor_position_horizontal, cursor_position_vertical=0) -> int:
+        self.check_win_condition()
+
         if len(cards) == 1:
             self.new_room(cards)
             cards = self.drawn_cards
-        # if self.player.health <= 0:
-        #     self.new_round()
+
         print(self.term.home + self.term.move_y(self.term.height // 4))
         self.term.hide_cursor()
         self.draw_player_state()
@@ -74,9 +100,9 @@ class Game:
 
         #print(self.term.move_down(2))
 
-        self.draw_cards(cards)
+        self.display_cards(cards)
 
-        margin = 3
+        margin = 5
         box_width = 20
         box_height = 10
         start_x = 5
@@ -157,14 +183,14 @@ class Game:
         
         self.drawn_cards = new_cards
 
-        cursor_position = 0
+        cursor_position_horizontal = 0
 
         if skipped_room == True:
             self.skipped_room = True
         else:
             self.skipped_room = False
 
-        cursor_position = self.draw_state(self.drawn_cards, cursor_position)
+        cursor_position_horizontal, cursor_position_vertical = self.draw_state(self.drawn_cards, cursor_position_horizontal)
 
     def run(self) -> None:
         print(self.term.black_on_darkkhaki(self.term.center('You start into the dungeon! press any key to continue')))
@@ -215,7 +241,7 @@ class Game:
         print(self.term.move_xy(x, y + 1) + title_line)
 
         content_lines = card.display_content()
-        for i in range(height - 4):
+        for i in range(height - 3):
             if i < len(content_lines):
                 content_line = f'│{str(content_lines[i]).ljust(width - 2)}│'
             else:
@@ -224,8 +250,8 @@ class Game:
 
         print(self.term.move_xy(x, y + height - 1) + '└' + '─' * (width - 2) + '┘')
 
-    def draw_cards(self, cards):
-        margin = 3
+    def display_cards(self, cards):
+        margin = 5
         box_width = 20
         box_height = 10
         start_x = 5
