@@ -2,7 +2,7 @@ from blessed import Terminal
 
 from base_classes.Player import Player
 from base_classes.Deck import Deck
-from base_classes.Card import Card, CardColor, CardValue, SkipRoom
+from base_classes.Card import Card, CardColor, CardValue, SkipRoom, CardInteractionTypes
 from base_classes.DiscardPile import DiscardPile
 
 
@@ -39,7 +39,7 @@ class Game:
             return True
         return None
         
-    def handle_card_interaction(self, selected_card: Card) -> None:
+    def handle_card_interaction(self, selected_card: Card, selected_interaction: CardInteractionTypes) -> None:
         if selected_card.is_weapon():
             self.add_weapon(selected_card)
         
@@ -47,7 +47,7 @@ class Game:
             self.add_health(selected_card)
 
         if selected_card.is_creature():
-            self.fight_creature(selected_card)
+            self.fight_creature(selected_card, selected_interaction)
 
         self.discard_pile.add(selected_card)
 
@@ -118,10 +118,16 @@ class Game:
                 pass
             else:
                 selected_card = self.drawn_cards[cursor_position_horizontal]
-                # TODO select interaction
-                #selected_interaction = self.drawn_cards[cursor_position_horizontal].interactions()[cursor_position_vertical]
+
+                card = self.drawn_cards[cursor_position_horizontal]
+                if card.is_creature():
+                    card_interactions = card.interactions(self.player.weapon)
+                else:
+                    card_interactions = card.interactions()
+
+                selected_interaction = card_interactions[cursor_position_vertical]
                 
-                self.handle_card_interaction(selected_card)
+                self.handle_card_interaction(selected_card, selected_interaction)
                 updated_cards = [card for card in cards if card != selected_card]
                 self.drawn_cards = updated_cards
                 self.skipped_room = False
@@ -172,17 +178,19 @@ class Game:
     def add_health(self, card: Card) -> None:
         self.player.add_health(card)
 
-    def fight_creature(self, creature: Card) -> None:
+    def fight_creature(self, creature: Card, selected_interaction: CardInteractionTypes) -> None:
+        ignore_weapon = (selected_interaction == CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED)
+
         if self.player.weapon is not None:
             defeated_creatures = self.player.weapon.defeated_creatures
         else:
             defeated_creatures = []
 
         if len(defeated_creatures) == 0:
-            self.get_value_diff(creature)
+            self.get_value_diff(creature, ignore_weapon)
         else:
             if defeated_creatures[-1].value >= creature.value:
-                self.get_value_diff(creature)
+                self.get_value_diff(creature, ignore_weapon)
             else:
                 print(self.term.black_on_darkkhaki(self.term.center(f'you have to fight it without a weapon')))
                 self.get_value_diff(creature, True)
