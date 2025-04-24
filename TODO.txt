@@ -6,3 +6,5 @@ creature class
 fix implement weapon stack
 
 hide fight with weapon option based on defeated stack
+
+handle interaction selection

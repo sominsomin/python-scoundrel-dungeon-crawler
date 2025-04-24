@@ -31,7 +31,7 @@ class Deck:
 
     def add_below(self, cards: list[Card]) -> None:
         # insert cards below
-        self.stack
+        self.stack.extend(cards)
 
 if __name__=='__main__':
     deck = Deck()

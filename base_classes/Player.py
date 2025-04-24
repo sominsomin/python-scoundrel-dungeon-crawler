@@ -4,7 +4,6 @@ class Player:
     def __init__(self):
         self.health = 20
         self.weapon = None
-        self.weapon_stack = []
 
     def lose_health(self,  value: int) -> None:
         self.health = self.health - value

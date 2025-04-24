@@ -16,6 +16,8 @@ class Game:
         self.discard_pile = DiscardPile()
         self.term = Terminal()
         self.deck.shuffle()
+        self.skipped_room = False
+        self.term.hide_cursor()
 
     def draw_player_state(self) -> None:
         print(self.term.home)
@@ -25,6 +27,8 @@ class Game:
 
         if self.player.weapon is not None:
             print(self.term.black((f'Weapon: {self.player.weapon.value} {[creature.value for creature in self.player.weapon.defeated_creatures]}')))
+        if self.skipped_room is False and len(self.drawn_cards) == 4:
+            print(self.term.black((f'[s]: skip current room')))
 
         print(self.term.move_down(2))
 
@@ -45,17 +49,16 @@ class Game:
         if selected_card.is_creature():
             self.fight_creature(selected_card)
 
-        if selected_card.is_skiproom():
-            self.skip_room()
-
         self.discard_pile.add(selected_card)
 
     def draw_state(self, cards, cursor_position_horizontal, cursor_position_vertical=0) -> int:
         if len(cards) == 1:
             self.new_room(cards)
+            cards = self.drawn_cards
         # if self.player.health <= 0:
         #     self.new_round()
-        print(self.term.home + self.term.clear + self.term.move_y(self.term.height // 4))
+        print(self.term.home + self.term.move_y(self.term.height // 4))
+        self.term.hide_cursor()
         self.draw_player_state()
         # print(self.term.grey(self.term.center('You entered a new room. Choose one item to interact with!')))
 
@@ -93,7 +96,7 @@ class Game:
                 y = box_height + 7 + j
                 print(self.term.move_xy(x, y) + centered_line)
         
-        with self.term.cbreak():
+        with self.term.cbreak(), self.term.hidden_cursor():
             key = self.term.inkey()
 
         if key.code == self.term.KEY_LEFT:
@@ -108,17 +111,22 @@ class Game:
         elif key.code == self.term.KEY_DOWN:
             cursor_position_vertical = (cursor_position_vertical + 1) % 2
             self.draw_state(cards, cursor_position_horizontal, cursor_position_vertical)
+        elif (key == 's' or key == 'S') and self.skipped_room == False and len(self.drawn_cards) == 4:
+            self.skip_room()
         elif key.code == self.term.KEY_ENTER or key == ' ':
             if cursor_position_horizontal == 4:
                 pass
             else:
                 selected_card = self.drawn_cards[cursor_position_horizontal]
-                selected_interaction = self.drawn_cards[cursor_position_horizontal].interactions()[cursor_position_vertical]
+                # TODO select interaction
+                #selected_interaction = self.drawn_cards[cursor_position_horizontal].interactions()[cursor_position_vertical]
                 
                 self.handle_card_interaction(selected_card)
                 updated_cards = [card for card in cards if card != selected_card]
                 self.drawn_cards = updated_cards
+                self.skipped_room = False
                 
+                print(self.term.clear)
                 self.draw_state(updated_cards, 0, 0)
         else:
             self.draw_state(cards, cursor_position_horizontal, cursor_position_vertical)
@@ -128,10 +136,12 @@ class Game:
     def first_room(self) -> None:
         self.drawn_cards = self.deck.draw(4)
         cursor_position = 0
+        print(self.term.clear)
 
         cursor_position = self.draw_state(self.drawn_cards, cursor_position)     
 
-    def new_room(self, cards=None) -> None:
+    def new_room(self, cards=None, skipped_room=False) -> None:
+        print(self.term.clear)
         if cards is None:
             drawn_cards = self.deck.draw(4)
             new_cards = drawn_cards
@@ -142,6 +152,12 @@ class Game:
         self.drawn_cards = new_cards
 
         cursor_position = 0
+
+        if skipped_room == True:
+            self.skipped_room = True
+        else:
+            self.skipped_room = False
+
         cursor_position = self.draw_state(self.drawn_cards, cursor_position)
 
     def run(self) -> None:
@@ -182,7 +198,7 @@ class Game:
 
     def skip_room(self) -> None:
         self.deck.add_below(self.drawn_cards)
-        self.new_room()
+        self.new_room(skipped_room=True)
 
     def draw_box(self, x, y, width, height, card):
         title = str(card)
@@ -205,7 +221,7 @@ class Game:
         box_width = 20
         box_height = 10
         start_x = 5
-        start_y = 5
+        start_y = 6
 
         # for i, card in enumerate(cards):
         #     x = start_x + i * (box_width + margin)
