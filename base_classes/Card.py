@@ -45,6 +45,7 @@ class Card:
     def __init__(self, color: CardColor, value: CardValue):
         self.color = color
         self.value = value
+        self.used = False
 
     def __str__(self):
         if self.is_weapon():
@@ -84,6 +85,12 @@ class Card:
         if self.color == CardColor.SKIPROOM.value:
             return True
         return False
+    
+    def is_used(self) -> bool:
+        return self.used
+    
+    def set_used(self) -> None:
+        self.used = True
 
 
 class Weapon(Card):
@@ -104,9 +111,11 @@ class Weapon(Card):
     
     def display_content(self):
         return [
-        "  ",
-        " | 00 ",
-        " | 00 ",
+        "       ",
+        "        /\ ",
+        "       /  \ ",
+        "       \  / ",
+        "        \/ ",
     ]
 
 
@@ -136,11 +145,11 @@ class Creature(Card):
 
     def display_content(self):
         return [
-        " 00 00 ",
-        "  | | ",
-        " |   | ",
-        " =====",
-        "  | | "
+        "       ",
+        "        00 ",
+        "       0000 ",
+        "        00 ",
+        "         ",
     ]
 
 class Health(Card):
@@ -160,9 +169,11 @@ class Health(Card):
     
     def display_content(self):
         return [
-        " 00",
-        "0000",
-        " 00",
+        "     ",    
+        "      00 00",
+        "     0000000",
+        "      00000",
+        "        0",
     ]
 
 class SkipRoom(Card):

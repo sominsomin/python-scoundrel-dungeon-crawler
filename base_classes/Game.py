@@ -2,7 +2,7 @@ from blessed import Terminal
 
 from base_classes.Player import Player
 from base_classes.Deck import Deck
-from base_classes.Card import Card, CardColor, CardValue, SkipRoom, CardInteractionTypes
+from base_classes.Card import Card, CardInteractionTypes
 from base_classes.DiscardPile import DiscardPile
 
 
@@ -21,6 +21,8 @@ class Game:
 
     def reset_game(self) -> None:
         self.player = Player()
+        self.deck = []
+        self.drawn_cards = []
         self.deck = Deck()
         self.discard_pile = DiscardPile()
         self.deck.shuffle()
@@ -29,12 +31,12 @@ class Game:
         print(self.term.home)
         current_room_count = len(self.deck) + len(self.drawn_cards)
         print(self.term.bold(f'Rooms: {current_room_count}/{self.deck.init_n_rooms}'))
-        print(self.term.black(f'Health: {self.player.health}'))
+        print(self.term.bold(f'Health: {self.player.health}'))
 
         if self.player.weapon is not None:
-            print(self.term.black((f'Weapon: {self.player.weapon.value} {[creature.value for creature in self.player.weapon.defeated_creatures]}')))
+            print(self.term.bold((f'Weapon: {self.player.weapon.value} {[creature.value for creature in self.player.weapon.defeated_creatures]}')))
         if self.skipped_room is False and len(self.drawn_cards) == 4:
-            print(self.term.black((f'[s]: skip current room')))
+            print(self.term.bold((f'[s]: skip current room')))
 
         print(self.term.move_down(2))
 
@@ -57,50 +59,37 @@ class Game:
         self.discard_pile.add(selected_card)
 
     def death_screen(self):
-        print(self.term.clear)
+        print(self.term.clear + self.term.move_y(self.term.height // 2))
         print(self.term.black_on_darkkhaki(self.term.center('You died ..... ')))
         print((self.term.center('Press any key to try again! ')))
         with self.term.cbreak(), self.term.hidden_cursor():
-            inp = self.term.inkey()
             print(self.term.clear)
             self.reset_game()
             self.first_room()
     
     def win_screen(self):
-        print(self.term.clear)
+        print(self.term.clear + self.term.move_y(self.term.height // 2))
         print(self.term.black_on_darkkhaki(self.term.center('Congratulations! You finished the dungeon!')))
         print((self.term.center('Press any key to try again! ')))
         with self.term.cbreak(), self.term.hidden_cursor():
-            inp = self.term.inkey()
             print(self.term.clear)
             self.reset_game()
             self.first_room()
 
-    def draw_state(self, cards, cursor_position_horizontal, cursor_position_vertical=0) -> int:
+    def draw_state(self, cursor_position_horizontal, cursor_position_vertical=0) -> int:
         self.check_win_condition()
 
-        if len(cards) == 1:
-            self.new_room(cards)
-            cards = self.drawn_cards
+        n_used_cards = [card.is_used() for card in self.drawn_cards].count(True)
+        if n_used_cards == 3:
+            self.new_room()
 
         print(self.term.home + self.term.move_y(self.term.height // 4))
         self.term.hide_cursor()
         self.draw_player_state()
-        # print(self.term.grey(self.term.center('You entered a new room. Choose one item to interact with!')))
 
-        n_options = 4
+        n_options = len(self.drawn_cards)
 
-        if len(self.drawn_cards) == 4:
-            pass
-            #cards.append(SkipRoom())
-            # print(self.term.center(f'{" > " if 4 == cursor_position else "   "} skip room entirely'))
-            #n_options += 1
-        else:
-            cards = [card for card in cards if card.color != CardColor.SKIPROOM]
-
-        #print(self.term.move_down(2))
-
-        self.display_cards(cards)
+        self.display_cards(self.drawn_cards)
 
         margin = 5
         box_width = 20
@@ -108,60 +97,87 @@ class Game:
         start_x = 5
         start_y = 5
 
-        for i, card in enumerate(cards):
+        if self.drawn_cards[cursor_position_horizontal].is_used():
+            for i in range(2 * n_options):
+                index = (cursor_position_horizontal + 1 + i) % n_options
+                if not self.drawn_cards[index].is_used():
+                    break
+            cursor_position_horizontal = index
+
+        for i, card in enumerate(self.drawn_cards):
+            if card.is_used():
+                continue
             if card.is_creature():
                 card_interactions = card.interactions(self.player.weapon)
             else:
                 card_interactions = card.interactions()
+            if i == cursor_position_horizontal and len(card_interactions) <= cursor_position_vertical:
+                cursor_position_vertical = 0
+
             for j, interaction in enumerate(card_interactions):
-                if i == cursor_position_horizontal and len(card_interactions) <= cursor_position_vertical:
-                    cursor_position_vertical = 0
                 line = f'{" > " if i == cursor_position_horizontal and j == cursor_position_vertical else "   "}{str(interaction.value)}'
                 centered_line = self.term.bold(line)
                 x = start_x + (box_width + margin) * i
                 y = box_height + 7 + j
                 print(self.term.move_xy(x, y) + centered_line)
+
+        print(self.term.home)
         
         with self.term.cbreak(), self.term.hidden_cursor():
             key = self.term.inkey()
 
         if key.code == self.term.KEY_LEFT:
-            cursor_position_horizontal = (cursor_position_horizontal - 1) % n_options
-            self.draw_state(cards, cursor_position_horizontal, cursor_position_vertical)
+            for i in range(2 * n_options):
+                index = (cursor_position_horizontal - 1 - i) % n_options
+                if not self.drawn_cards[index].is_used():
+                    break
+
+            cursor_position_horizontal = index
+
+            # cursor_position_horizontal = (cursor_position_horizontal - 1) % n_options
+            self.draw_state(cursor_position_horizontal, cursor_position_vertical)
         elif key.code == self.term.KEY_RIGHT:
-            cursor_position_horizontal = (cursor_position_horizontal + 1) % n_options
-            self.draw_state(cards, cursor_position_horizontal, cursor_position_vertical)
+            for i in range(2 * n_options):
+                index = (cursor_position_horizontal + 1 + i) % n_options
+                if not self.drawn_cards[index].is_used():
+                    break
+
+            cursor_position_horizontal = index
+
+            # cursor_position_horizontal = (cursor_position_horizontal + 1) % n_options
+            self.draw_state(cursor_position_horizontal, cursor_position_vertical)
         elif key.code == self.term.KEY_UP:
             cursor_position_vertical = (cursor_position_vertical - 1) % 2
-            self.draw_state(cards, cursor_position_horizontal, cursor_position_vertical)
+            self.draw_state(cursor_position_horizontal, cursor_position_vertical)
         elif key.code == self.term.KEY_DOWN:
             cursor_position_vertical = (cursor_position_vertical + 1) % 2
-            self.draw_state(cards, cursor_position_horizontal, cursor_position_vertical)
+            self.draw_state(cursor_position_horizontal, cursor_position_vertical)
         elif (key == 's' or key == 'S') and self.skipped_room == False and len(self.drawn_cards) == 4:
             self.skip_room()
         elif key.code == self.term.KEY_ENTER or key == ' ':
-            if cursor_position_horizontal == 4:
-                pass
+            selected_card = self.drawn_cards[cursor_position_horizontal]
+
+            if selected_card.is_used():
+                self.draw_state(0, 0)
+
+            card = self.drawn_cards[cursor_position_horizontal]
+            if card.is_creature():
+                card_interactions = card.interactions(self.player.weapon)
             else:
-                selected_card = self.drawn_cards[cursor_position_horizontal]
+                card_interactions = card.interactions()
 
-                card = self.drawn_cards[cursor_position_horizontal]
-                if card.is_creature():
-                    card_interactions = card.interactions(self.player.weapon)
-                else:
-                    card_interactions = card.interactions()
-
-                selected_interaction = card_interactions[cursor_position_vertical]
-                
-                self.handle_card_interaction(selected_card, selected_interaction)
-                updated_cards = [card for card in cards if card != selected_card]
-                self.drawn_cards = updated_cards
-                self.skipped_room = False
-                
-                print(self.term.clear)
-                self.draw_state(updated_cards, 0, 0)
+            selected_interaction = card_interactions[cursor_position_vertical]
+            
+            self.handle_card_interaction(selected_card, selected_interaction)
+            # updated_cards = [card for card in cards if card != selected_card]
+            # self.drawn_cards = updated_cards
+            self.skipped_room = False
+            self.drawn_cards[cursor_position_horizontal].set_used()
+            
+            print(self.term.clear)
+            self.draw_state(0, 0)
         else:
-            self.draw_state(cards, cursor_position_horizontal, cursor_position_vertical)
+            self.draw_state(cursor_position_horizontal, cursor_position_vertical)
 
         return cursor_position_horizontal, cursor_position_vertical
     
@@ -169,17 +185,19 @@ class Game:
         self.drawn_cards = self.deck.draw(4)
         cursor_position = 0
         print(self.term.clear)
+        print(self.term.home)
 
-        cursor_position = self.draw_state(self.drawn_cards, cursor_position)     
+        cursor_position = self.draw_state(cursor_position)     
 
-    def new_room(self, cards=None, skipped_room=False) -> None:
+    def new_room(self, skipped_room=False) -> None:
         print(self.term.clear)
-        if cards is None:
+        if self.drawn_cards is None or len(self.drawn_cards) == 0:
             drawn_cards = self.deck.draw(4)
             new_cards = drawn_cards
         else:
+            unused_card = [card for card in self.drawn_cards if not card.is_used()]
             drawn_cards = self.deck.draw(3)
-            new_cards = [*cards, *drawn_cards]
+            new_cards = [*unused_card, *drawn_cards]
         
         self.drawn_cards = new_cards
 
@@ -190,9 +208,10 @@ class Game:
         else:
             self.skipped_room = False
 
-        cursor_position_horizontal, cursor_position_vertical = self.draw_state(self.drawn_cards, cursor_position_horizontal)
+        cursor_position_horizontal, cursor_position_vertical = self.draw_state(cursor_position_horizontal)
 
     def run(self) -> None:
+        print(self.term.clear + self.term.home + self.term.move_y(self.term.height // 2))
         print(self.term.black_on_darkkhaki(self.term.center('You start into the dungeon! press any key to continue')))
         with self.term.cbreak(), self.term.hidden_cursor():
             inp = self.term.inkey()
@@ -232,15 +251,21 @@ class Game:
 
     def skip_room(self) -> None:
         self.deck.add_below(self.drawn_cards)
+        self.drawn_cards = []
         self.new_room(skipped_room=True)
 
     def draw_box(self, x, y, width, height, card):
-        title = str(card)
+        if card.is_used():
+            title = 'XXXXXXX'
+            content_lines = ''
+        else:
+            title = str(card)
+            content_lines = card.display_content()
+
         print(self.term.move_xy(x, y) + '┌' + '─' * (width - 2) + '┐')
         title_line = f'│{title.center(width - 2)}│'
         print(self.term.move_xy(x, y + 1) + title_line)
-
-        content_lines = card.display_content()
+        
         for i in range(height - 3):
             if i < len(content_lines):
                 content_line = f'│{str(content_lines[i]).ljust(width - 2)}│'
@@ -257,22 +282,7 @@ class Game:
         start_x = 5
         start_y = 6
 
-        # for i, card in enumerate(cards):
-        #     x = start_x + i * (box_width + margin)
-        #     y = start_y
-        
-        #     self.draw_box(x, y, box_width, box_height, str(card), str(card))
-
         for i, card in enumerate(cards):
             x = start_x + i * (box_width + margin)
             y = start_y
             self.draw_box(x, y, box_width, box_height, card)
-
-            # Capture keyboard input
-            key = self.term.inkey(timeout=0.1)
-            if key.code == self.term.KEY_LEFT:
-                selected_index = (selected_index - 1) % len(cards)
-            elif key.code == self.term.KEY_RIGHT:
-                selected_index = (selected_index + 1) % len(cards)
-            elif key.code == self.term.KEY_ENTER or key == 'q':
-                break

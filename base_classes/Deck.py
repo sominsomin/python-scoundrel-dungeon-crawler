@@ -26,11 +26,7 @@ class Deck:
 
         return drawn_cards
 
-    def add_on_top(self, cards: list[Card]) -> None:
-        pass
-
     def add_below(self, cards: list[Card]) -> None:
-        # insert cards below
         self.stack.extend(cards)
 
 if __name__=='__main__':
