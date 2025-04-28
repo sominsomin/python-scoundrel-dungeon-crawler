@@ -1,13 +1,12 @@
 import random
 from base_classes.Card import Card, CardValuePlayer, CardValue, Creature, Weapon, Health
 
-creatures = [Creature(value.value) for value in CardValue]
-health = [Health(value.value) for value in CardValuePlayer]
-weapon = [Weapon(value.value) for value in CardValuePlayer]
-
 
 class Deck:
     def __init__(self):
+        creatures = [Creature(value.value) for value in CardValue]
+        health = [Health(value.value) for value in CardValuePlayer]
+        weapon = [Weapon(value.value) for value in CardValuePlayer]
         self.stack = [*creatures, *weapon, *health]
         self.init_n_rooms = len(self.stack)
 
@@ -28,11 +27,3 @@ class Deck:
 
     def add_below(self, cards: list[Card]) -> None:
         self.stack.extend(cards)
-
-if __name__=='__main__':
-    deck = Deck()
-    deck.shuffle()
-    print(deck.stack)
-    print(deck.draw(10))
-    print(deck.stack)
-    print()

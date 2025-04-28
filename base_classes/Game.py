@@ -1,4 +1,5 @@
 from blessed import Terminal
+import time
 
 from base_classes.Player import Player
 from base_classes.Deck import Deck
@@ -35,7 +36,7 @@ class Game:
 
         if self.player.weapon is not None:
             print(self.term.bold((f'Weapon: {self.player.weapon.value} {[creature.value for creature in self.player.weapon.defeated_creatures]}')))
-        if self.skipped_room is False and len(self.drawn_cards) == 4:
+        if self.skipped_room is False and self.n_used_cards == 0:
             print(self.term.bold((f'[s]: skip current room')))
 
         print(self.term.move_down(2))
@@ -62,25 +63,33 @@ class Game:
         print(self.term.clear + self.term.move_y(self.term.height // 2))
         print(self.term.black_on_darkkhaki(self.term.center('You died ..... ')))
         print((self.term.center('Press any key to try again! ')))
+        time.sleep(1)
         with self.term.cbreak(), self.term.hidden_cursor():
-            print(self.term.clear)
-            self.reset_game()
-            self.first_room()
+            key = self.term.inkey()
+            if key:
+                print(self.term.clear)
+                self.reset_game()
+                self.first_room()
     
     def win_screen(self):
         print(self.term.clear + self.term.move_y(self.term.height // 2))
         print(self.term.black_on_darkkhaki(self.term.center('Congratulations! You finished the dungeon!')))
         print((self.term.center('Press any key to try again! ')))
+        time.sleep(1)
         with self.term.cbreak(), self.term.hidden_cursor():
-            print(self.term.clear)
-            self.reset_game()
-            self.first_room()
+            key = self.term.inkey()
+            if key:
+                print(self.term.clear)
+                self.reset_game()
+                self.first_room()
 
     def draw_state(self, cursor_position_horizontal, cursor_position_vertical=0) -> int:
         self.check_win_condition()
 
         n_used_cards = [card.is_used() for card in self.drawn_cards].count(True)
-        if n_used_cards == 3:
+        self.n_used_cards = n_used_cards
+
+        if self.n_used_cards == 3:
             self.new_room()
 
         print(self.term.home + self.term.move_y(self.term.height // 4))
@@ -152,7 +161,7 @@ class Game:
         elif key.code == self.term.KEY_DOWN:
             cursor_position_vertical = (cursor_position_vertical + 1) % 2
             self.draw_state(cursor_position_horizontal, cursor_position_vertical)
-        elif (key == 's' or key == 'S') and self.skipped_room == False and len(self.drawn_cards) == 4:
+        elif (key == 's' or key == 'S') and self.skipped_room == False and self.n_used_cards == 0:
             self.skip_room()
         elif key.code == self.term.KEY_ENTER or key == ' ':
             selected_card = self.drawn_cards[cursor_position_horizontal]
