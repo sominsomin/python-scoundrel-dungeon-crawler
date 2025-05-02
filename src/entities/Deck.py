@@ -5,9 +5,10 @@ from entities.Card import Card, CardValuePlayer, CardValue, Creature, Weapon, He
 class Deck:
     def __init__(self):
         creatures = [Creature(value.value) for value in CardValue]
+        creatures_2 = [Creature(value.value) for value in CardValue]
         health = [Health(value.value) for value in CardValuePlayer]
         weapon = [Weapon(value.value) for value in CardValuePlayer]
-        self.stack = [*creatures, *weapon, *health]
+        self.stack = [*creatures, *creatures_2, *weapon, *health]
         self.init_n_rooms = len(self.stack)
 
     def __len__(self) -> int:
