@@ -32,10 +32,15 @@ class Game:
         print(self.term.home)
         current_room_count = len(self.deck) + len(self.drawn_cards)
         print(self.term.bold(f'Cards: {current_room_count}/{self.deck.init_n_rooms}'))
-        print(self.term.bold(f'Health: {self.player.health}'))
+        if self.player.health > 15:
+            print(self.term.green(f'Health: {self.player.health}'))
+        elif self.player.health > 5:
+            print(self.term.yellow(f'Health: {self.player.health}'))
+        else:
+            print(self.term.red(f'Health: {self.player.health}'))
 
         if self.player.weapon is not None:
-            print(self.term.bold((f'Weapon: {self.player.weapon.value} {[creature.value for creature in self.player.weapon.defeated_creatures]}')))
+            print(self.term.yellow((f'Weapon: {self.player.weapon.value}, defeated creatures stack: {[creature.value for creature in self.player.weapon.defeated_creatures]}')))
         if self.skipped_room is False and self.n_used_cards == 0:
             print(self.term.bold((f'[s]: skip current room')))
 
