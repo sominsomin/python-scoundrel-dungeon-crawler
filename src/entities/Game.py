@@ -1,10 +1,10 @@
 from blessed import Terminal
 import time
 
-from base_classes.Player import Player
-from base_classes.Deck import Deck
-from base_classes.Card import Card, CardInteractionTypes
-from base_classes.DiscardPile import DiscardPile
+from entities.Player import Player
+from entities.Deck import Deck
+from entities.Card import Card, CardInteractionTypes
+from entities.DiscardPile import DiscardPile
 
 
 class Game:

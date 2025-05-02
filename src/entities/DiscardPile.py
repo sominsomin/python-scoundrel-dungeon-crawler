@@ -1,5 +1,4 @@
-import random
-from base_classes.Card import Card, CardColor, CardValue
+from entities.Card import Card, CardColor, CardValue
 
 
 class DiscardPile:

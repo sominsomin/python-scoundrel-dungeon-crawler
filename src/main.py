@@ -1,4 +1,4 @@
-from base_classes.Game import Game
+from entities.Game import Game
 from blessed import Terminal
 
 game_run = True

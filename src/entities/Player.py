@@ -1,4 +1,4 @@
-from base_classes.Card import Card
+from entities.Card import Card
 
 class Player:
     def __init__(self):

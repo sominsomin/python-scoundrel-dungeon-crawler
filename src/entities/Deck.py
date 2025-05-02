@@ -1,5 +1,5 @@
 import random
-from base_classes.Card import Card, CardValuePlayer, CardValue, Creature, Weapon, Health
+from entities.Card import Card, CardValuePlayer, CardValue, Creature, Weapon, Health
 
 
 class Deck:
