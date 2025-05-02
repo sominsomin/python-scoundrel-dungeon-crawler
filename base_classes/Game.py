@@ -31,7 +31,7 @@ class Game:
     def draw_player_state(self) -> None:
         print(self.term.home)
         current_room_count = len(self.deck) + len(self.drawn_cards)
-        print(self.term.bold(f'Rooms: {current_room_count}/{self.deck.init_n_rooms}'))
+        print(self.term.bold(f'Cards: {current_room_count}/{self.deck.init_n_rooms}'))
         print(self.term.bold(f'Health: {self.player.health}'))
 
         if self.player.weapon is not None:
@@ -61,7 +61,7 @@ class Game:
 
     def death_screen(self):
         print(self.term.clear + self.term.move_y(self.term.height // 2))
-        print(self.term.black_on_darkkhaki(self.term.center('You died ..... ')))
+        print(self.term.black_on_red(self.term.center('You died ..... ')))
         print((self.term.center('Press any key to try again! ')))
         time.sleep(1)
         with self.term.cbreak(), self.term.hidden_cursor():
@@ -73,7 +73,7 @@ class Game:
     
     def win_screen(self):
         print(self.term.clear + self.term.move_y(self.term.height // 2))
-        print(self.term.black_on_darkkhaki(self.term.center('Congratulations! You finished the dungeon!')))
+        print(self.term.black_on_green(self.term.center('Congratulations! You finished the dungeon!')))
         print((self.term.center('Press any key to try again! ')))
         time.sleep(1)
         with self.term.cbreak(), self.term.hidden_cursor():
