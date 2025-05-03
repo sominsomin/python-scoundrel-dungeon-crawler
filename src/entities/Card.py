@@ -39,7 +39,7 @@ class CardInteractionTypes(Enum):
     TAKE_WEAPON = 'take Weapon'
     TAKE_HEALTH_POTION = 'take Health'
     FIGHT_CREATURE_WITH_WEAPON = 'fight with weapon'
-    FIGHT_CREATURE_BARE_HANDED = 'fight with bare hands'
+    FIGHT_CREATURE_BARE_HANDED = 'fight with hands'
 
 class Card:
     def __init__(self, color: CardColor, value: CardValue):
