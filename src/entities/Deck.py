@@ -19,7 +19,7 @@ class Deck:
 
     def draw(self, n_cards: int) -> None:
         """
-        return n_cards first cards, removes those from the stack 
+        return n_cards first cards, removes those from the stack
         """
         drawn_cards = self.stack[0:n_cards]
         self.stack = self.stack[n_cards:]

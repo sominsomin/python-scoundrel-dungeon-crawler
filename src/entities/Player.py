@@ -1,11 +1,12 @@
 from entities.Card import Card
 
+
 class Player:
     def __init__(self):
         self.health = 20
         self.weapon = None
 
-    def lose_health(self,  value: int) -> None:
+    def lose_health(self, value: int) -> None:
         self.health = self.health - value
 
     def add_weapon(self, weapon: Card) -> None:
