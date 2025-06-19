@@ -1,4 +1,4 @@
-from entities.Card import Card, CardColor, CardValue
+from entities.Card import Card
 
 
 class DiscardPile:

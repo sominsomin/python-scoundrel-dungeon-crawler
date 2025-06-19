@@ -1,20 +1,22 @@
 # About
 This is a python terminal based implementation of the dungeon crawler card game [Scoundrel](http://www.stfj.net/art/2011/Scoundrel.pdf) by Zach Gage and Kurt Biek, based on a standard 54 card poker deck.
 
+![](image/screenshot.png)
+
 # Install
 You have to first install the necessary packages:
 ```bash
-pip install -r requirements.txt
+pip install .
 ```
-
-## Dependencies
-[blessed](https://github.com/chjj/blessed)
 
 # Run
 run the game in your terminal with:
 ```bash
 python -m main.py
 ```
+
+## Dependencies
+[blessed](https://github.com/chjj/blessed)
 
 # Game Rules
 Each round you can choose to interact with 3 objects from 4 objects.

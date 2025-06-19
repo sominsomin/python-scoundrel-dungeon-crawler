@@ -68,8 +68,7 @@ class Card:
             return f"Health {self.value}"
         if self.is_creature():
             return f"Creature {self.value}"
-        else:
-            return f"Card(Color: {self.color}, Value: {self.value})"
+        return f"Card(Color: {self.color}, Value: {self.value})"
 
     def is_weapon(self) -> bool:
         if self.color == CardColor.DIAMONDS.value:
@@ -139,20 +138,18 @@ class Creature(Card):
     def interactions(self, weapon: Weapon = None):
         if weapon is None:
             return [CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
-        else:
-            if len(weapon.defeated_creatures) != 0:
-                if weapon.defeated_creatures[-1].value >= self.value:
-                    return [
-                        CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON,
-                        CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED,
-                    ]
-                else:
-                    return [CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
-            else:
+
+        if len(weapon.defeated_creatures) != 0:
+            if weapon.defeated_creatures[-1].value >= self.value:
                 return [
                     CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON,
                     CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED,
                 ]
+            return [CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED]
+        return [
+            CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON,
+            CardInteractionTypes.FIGHT_CREATURE_BARE_HANDED,
+        ]
 
     def display_content(self):
         return [
@@ -198,10 +195,10 @@ class SkipRoom(Card):
 
     def __str__(self):
         return (
-            f"Skip current room. (if chosen, next room this option won't be available)"
+            "Skip current room. (if chosen, next room this option won't be available)"
         )
 
     def __repr__(self):
         return (
-            f"Skip current room. (if chosen, next room this option won't be available)"
+            "Skip current room. (if chosen, next room this option won't be available)"
         )

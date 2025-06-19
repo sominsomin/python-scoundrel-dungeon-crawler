@@ -1,5 +1,5 @@
-from blessed import Terminal
 import time
+from blessed import Terminal
 
 from entities.Player import Player
 from entities.Deck import Deck
@@ -17,9 +17,9 @@ MIN_HEIGHT = BOX_HEIGHT + START_Y + 5
 
 
 class Game:
-    defeated_creatures = []
     drawn_cards = []
     quit = False
+    n_used_cards = 0
 
     def __init__(self):
         self.player = Player()
@@ -59,9 +59,9 @@ class Game:
                 )
             )
         if self.skipped_room is False and self.n_used_cards == 0:
-            print(self.term.bold((f"[s]: skip current room")))
-        print(self.term.bold((f"[r]: restart game")))
-        print(self.term.bold((f"[q]: exit game")))
+            print(self.term.bold(("[s]: skip current room")))
+        print(self.term.bold(("[r]: restart game")))
+        print(self.term.bold(("[q]: exit game")))
 
         print(self.term.move_down(2))
 
@@ -118,7 +118,7 @@ class Game:
             print(
                 self.term.center(
                     self.term.white_on_black(
-                        f"please increase the terminal window size for better presentation"
+                        "please increase the terminal window size for better presentation"
                     )
                 )
             )
@@ -155,7 +155,7 @@ class Game:
             self.draw_state(cursor_position_horizontal, cursor_position_vertical)
         elif (
             (key == "s" or key == "S")
-            and self.skipped_room == False
+            and self.skipped_room is False
             and self.n_used_cards == 0
         ):
             self.skip_room()
@@ -192,8 +192,7 @@ class Game:
     def draw_state(self, cursor_position_horizontal, cursor_position_vertical=0) -> int:
         self.check_win_condition()
 
-        n_used_cards = [card.is_used() for card in self.drawn_cards].count(True)
-        self.n_used_cards = n_used_cards
+        self.n_used_cards = [card.is_used() for card in self.drawn_cards].count(True)
 
         if self.n_used_cards == 3 and len(self.deck) > 4:
             self.new_room()
@@ -250,7 +249,7 @@ class Game:
         print(self.term.clear)
         print(self.term.home)
 
-        cursor_position = self.draw_state(cursor_position)
+        self.draw_state(cursor_position)
 
     def new_room(self, skipped_room=False) -> None:
         print(self.term.clear)
@@ -266,12 +265,12 @@ class Game:
 
         cursor_position_horizontal = 0
 
-        if skipped_room == True:
+        if skipped_room is True:
             self.skipped_room = True
         else:
             self.skipped_room = False
 
-        cursor_position_horizontal, cursor_position_vertical = self.draw_state(
+        self.draw_state(
             cursor_position_horizontal
         )
 
@@ -288,7 +287,7 @@ class Game:
         )
         self.check_term_window_size()
         with self.term.cbreak(), self.term.hidden_cursor():
-            inp = self.term.inkey()
+            self.term.inkey()
         self.first_room()
 
     def add_weapon(self, card: Card) -> None:
@@ -317,7 +316,7 @@ class Game:
             else:
                 print(
                     self.term.black_on_darkkhaki(
-                        self.term.center(f"you have to fight it without a weapon")
+                        self.term.center("you have to fight it without a weapon")
                     )
                 )
                 self.get_value_diff(creature, True)
