@@ -17,7 +17,7 @@ scoundrel
 Please make sure that the terminal window is big enough, otherwise some elements won't align. At the start you will get a message, if the screen is too small.
 
 ## Dependencies
-[blessed](https://github.com/chjj/blessed)
+[blessed](https://github.com/chjj/blessed) — terminal handling library
 
 # Game Rules
 Each round you can choose to interact with 3 objects from 4 objects.
