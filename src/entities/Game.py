@@ -18,7 +18,6 @@ MIN_HEIGHT = BOX_HEIGHT + START_Y + 5
 
 class Game:
     drawn_cards = []
-    quit = False
     n_used_cards = 0
 
     def __init__(self):
@@ -185,7 +184,7 @@ class Game:
             self.first_room()
         elif key == "q" or key == "Q":
             print(self.term.clear)
-            self.quit = True
+            quit()
         else:
             self.draw_state(cursor_position_horizontal, cursor_position_vertical)
 

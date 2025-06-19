@@ -12,8 +12,9 @@ pip install .
 # Run
 run the game in your terminal with:
 ```bash
-python -m main.py
+scoundrel
 ```
+Please make sure that the terminal window is not small enough, otherwise some elements won't align.
 
 ## Dependencies
 [blessed](https://github.com/chjj/blessed)
