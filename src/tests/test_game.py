@@ -1,7 +1,7 @@
 import pytest
 
 from src.entities.Game import Game
-from src.entities.Card import Card, CardColor, CardValue, Weapon, Health, Creature
+from src.entities.Card import Card, CardColor, CardValue, Weapon, Health, Creature, CardInteractionTypes
 
 
 @pytest.fixture
@@ -74,7 +74,7 @@ def test_fight_creature(
 
     game.player.health = original_health
     game.add_weapon(weapon)
-    game.fight_creature(creature)
+    game.fight_creature(creature, CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON)
 
     assert game.player.health == expected_health
     assert game.player.weapon.defeated_creatures[0] == creature
@@ -106,7 +106,7 @@ def test_fight_creature_with_stack(
     game.player.health = original_health
     game.add_weapon(weapon)
 
-    game.fight_creature(creature)
+    game.fight_creature(creature, CardInteractionTypes.FIGHT_CREATURE_WITH_WEAPON)
 
     assert game.player.health == expected_health
 
