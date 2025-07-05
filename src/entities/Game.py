@@ -1,10 +1,10 @@
 import time
 from blessed import Terminal
 
-from entities.Player import Player
-from entities.Deck import Deck
-from entities.Card import Card, CardInteractionTypes
-from entities.DiscardPile import DiscardPile
+from .Player import Player
+from .Deck import Deck
+from .Card import Card, CardInteractionTypes
+from .DiscardPile import DiscardPile
 
 MARGIN = 5
 BOX_WIDTH = 20
